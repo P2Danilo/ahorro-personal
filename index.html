@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Plan de Ahorro</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@800&family=DM+Mono:wght@400&display=swap" rel="stylesheet"/>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{background:#0D0D0D;color:#f0ece4;font-family:'DM Mono',monospace;}
+    #root{min-height:100vh;}
+    .w{max-width:480px;margin:0 auto;padding:24px 16px 90px;}
+    .T{font-family:'Syne',sans-serif;font-size:26px;font-weight:800;letter-spacing:-1px;line-height:1.1;margin-bottom:3px;}
+    .T span{color:#FF6B00;}
+    .sub{font-size:10px;color:#3a3a3a;letter-spacing:2px;text-transform:uppercase;margin-bottom:22px;}
+    .alrt{background:linear-gradient(135deg,#FF6B00,#FF3D00);border-radius:12px;padding:12px 15px;margin-bottom:16px;display:flex;align-items:center;gap:9px;font-size:12px;color:#fff;}
+    .tabs{display:flex;gap:7px;overflow-x:auto;padding-bottom:4px;margin-bottom:16px;scrollbar-width:none;}
+    .tabs::-webkit-scrollbar{display:none;}
+    .tab{flex-shrink:0;padding:6px 12px;border-radius:20px;border:1px solid #222;background:transparent;color:#555;cursor:pointer;font-family:'DM Mono',monospace;font-size:11px;transition:all .2s;white-space:nowrap;}
+    .tab.on{color:#0D0D0D;border-color:transparent;font-weight:700;}
+    .card{background:#161616;border-radius:13px;padding:17px;margin-bottom:13px;border:1px solid #1f1f1f;}
+    .pt{height:5px;background:#1f1f1f;border-radius:3px;margin:9px 0;overflow:hidden;}
+    .pf{height:100%;border-radius:3px;transition:width .6s cubic-bezier(.4,0,.2,1);}
+    .big{font-family:'Syne',sans-serif;font-size:29px;font-weight:800;}
+    .meta{font-size:10px;color:#3a3a3a;letter-spacing:1px;}
+    .sec{font-size:10px;color:#FF6B00;letter-spacing:2px;text-transform:uppercase;margin-bottom:9px;}
+    .inp{background:#111;border:1px solid #222;border-radius:9px;padding:11px 13px;color:#f0ece4;font-family:'DM Mono',monospace;font-size:15px;width:100%;outline:none;transition:border-color .2s;}
+    .inp:focus{border-color:#FF6B00;}
+    .inp.sm{font-size:12px;padding:9px 12px;}
+    .btn{width:100%;padding:12px;border-radius:9px;border:none;font-family:'DM Mono',monospace;font-size:12px;font-weight:700;cursor:pointer;letter-spacing:1px;transition:transform .1s;}
+    .btn:active{transform:scale(.98);}
+    .o{background:#FF6B00;color:#0D0D0D;}
+    .gh{background:#1a1a1a;color:#666;border:1px solid #222;}
+    .rd{background:#c0392b;color:#fff;}
+    .ok{background:#0a1f0a;border:1px solid #143214;border-radius:9px;padding:10px;text-align:center;font-size:11px;color:#4caf50;margin-bottom:13px;}
+    .nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;background:#0D0D0D;border-top:1px solid #181818;display:flex;z-index:100;}
+    .nb{flex:1;padding:12px 5px;background:transparent;border:none;color:#2e2e2e;font-family:'DM Mono',monospace;font-size:9px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;letter-spacing:1px;text-transform:uppercase;transition:color .2s;}
+    .nb.on{color:#FF6B00;}
+    .row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #1a1a1a;}
+    .row:last-child{border-bottom:none;}
+    .ed{font-size:10px;color:#3a3a3a;}
+    .en{font-size:11px;color:#444;margin-top:2px;}
+    .ea{font-family:'Syne',sans-serif;font-size:16px;font-weight:800;}
+    .db{background:none;border:none;color:#252525;cursor:pointer;font-size:14px;padding:4px;transition:color .2s;}
+    .db:hover{color:#FF3D00;}
+    .g2{display:grid;grid-template-columns:1fr 1fr;gap:9px;}
+    .sc{background:#161616;border-radius:11px;padding:12px;border:1px solid #1f1f1f;cursor:pointer;transition:border-color .2s;}
+    .sc:hover{border-color:#FF6B00;}
+    .sb{height:3px;background:#1f1f1f;border-radius:2px;margin-top:6px;overflow:hidden;}
+    .sbf{height:100%;border-radius:2px;}
+    .sp{font-size:9px;color:#3a3a3a;margin-top:3px;}
+    .bdg{display:inline-block;background:#0a1f0a;color:#4caf50;font-size:9px;padding:2px 7px;border-radius:20px;letter-spacing:1px;margin-left:5px;vertical-align:middle;}
+    .mbg{position:fixed;inset:0;background:rgba(0,0,0,.9);display:flex;align-items:center;justify-content:center;z-index:200;padding:20px;}
+    .mb{background:#161616;border:1px solid #222;border-radius:13px;padding:21px;max-width:320px;width:100%;}
+    .mt{font-family:'Syne',sans-serif;font-size:17px;font-weight:800;margin-bottom:6px;}
+    .mx{font-size:11px;color:#555;margin-bottom:17px;}
+    .r2{display:flex;gap:8px;}
+    .ai{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid #1a1a1a;}
+    .ai:last-child{border-bottom:none;}
+    .an{font-family:'Syne',sans-serif;font-size:14px;font-weight:800;}
+    .am{font-size:10px;color:#3a3a3a;margin-top:2px;}
+    .aa{display:flex;gap:7px;}
+    .ib{background:#1a1a1a;border:1px solid #222;border-radius:7px;padding:6px 10px;cursor:pointer;font-size:12px;color:#666;transition:all .2s;}
+    .ib:hover{border-color:#FF6B00;color:#FF6B00;}
+    .ib.d:hover{border-color:#c0392b;color:#c0392b;}
+    .eg{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;margin-top:7px;}
+    .eo{padding:7px;border-radius:7px;border:1px solid #222;background:#111;font-size:17px;cursor:pointer;text-align:center;transition:border-color .2s;}
+    .eo:hover,.eo.s{border-color:#FF6B00;}
+    .lbl{font-size:10px;color:#444;letter-spacing:1px;text-transform:uppercase;display:block;margin-bottom:4px;margin-top:11px;}
+    .loading{display:flex;align-items:center;justify-content:center;height:100vh;font-size:13px;letter-spacing:3px;color:#FF6B00;}
+  </style>
+</head>
+<body>
+<div id="root"><div class="loading">CARGANDO...</div></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+import { getFirestore, collection, doc, onSnapshot, addDoc, updateDoc, deleteDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+// ── Firebase ──────────────────────────────────────────────────────
+const app = initializeApp({
+  apiKey: "AIzaSyAtxItw-xbzU6mDHcoWdjcb1TDCjzGjlXE",
+  authDomain: "ahorro-personal-1da9a.firebaseapp.com",
+  projectId: "ahorro-personal-1da9a",
+  storageBucket: "ahorro-personal-1da9a.firebasestorage.app",
+  messagingSenderId: "734783925410",
+  appId: "1:734783925410:web:e4df99532721285f29fbfb"
+});
+const db = getFirestore(app);
+
+// ── Constants ────────────────────────────────────────────────────
+const DEFAULT_GOALS = [
+  { name:"Nevera",               emoji:"🧊", target:1700000,  monthlyTarget:250000, startMonth:1,  endMonth:7  },
+  { name:"15 años hija",         emoji:"🎂", target:5000000,  monthlyTarget:500000, startMonth:1,  endMonth:10 },
+  { name:"Computador",           emoji:"💻", target:2500000,  monthlyTarget:500000, startMonth:8,  endMonth:14 },
+  { name:"Escritorio ajustable", emoji:"🖥️", target:1200000,  monthlyTarget:250000, startMonth:11, endMonth:15 },
+  { name:"Moto Pulsar NS 200",   emoji:"🏍️", target:11000000, monthlyTarget:750000, startMonth:16, endMonth:30 },
+];
+const EMOJIS = ["🧊","🎂","💻","🖥️","🏍️","🚗","📱","✈️","🏠","🎮","📷","👟","🎵","💪","🎯","💡","🛒","⌚","🔧","📚"];
+const PALETTE = ["#FF6B00","#FF9A40","#FFB347","#FF8C1A","#FF5500","#FF4400","#FFA020","#FF7700"];
+
+// ── Helpers ───────────────────────────────────────────────────────
+const fmt = n => new Intl.NumberFormat("es-CO",{style:"currency",currency:"COP",minimumFractionDigits:0}).format(n||0);
+const clr = i => PALETTE[i % PALETTE.length];
+const daysSince = ts => ts ? Math.floor((Date.now()-ts)/86400000) : null;
+
+// ── State ─────────────────────────────────────────────────────────
+let state = {
+  goals: [], entries: {}, activeId: null,
+  view: "dashboard", loading: true, lastTs: null,
+  amount: "", note: "", flash: false, confirm: null,
+  adminMode: "list", editGoal: null, emojiOpen: false,
+  form: { name:"", emoji:"🎯", target:"", monthlyTarget:"", startMonth:"", endMonth:"" }
+};
+
+function setState(patch) {
+  state = { ...state, ...patch };
+  render();
+}
+
+// ── Firebase actions ──────────────────────────────────────────────
+async function seedIfEmpty() {
+  const snap = await getDocs(collection(db,"goals"));
+  if (snap.empty) {
+    for (const g of DEFAULT_GOALS)
+      await addDoc(collection(db,"goals"), {...g, createdAt: Date.now()});
+  }
+}
+
+async function addEntry() {
+  const n = parseFloat(state.amount.replace(/\./g,"").replace(",","."));
+  if (!n || n <= 0 || !state.activeId) return;
+  await addDoc(collection(db,"goals",state.activeId,"entries"), {amount:n, note:state.note||"", date:Date.now()});
+  setState({amount:"", note:"", flash:true});
+  setTimeout(() => setState({flash:false}), 2500);
+}
+
+async function delEntry(gid, eid) {
+  await deleteDoc(doc(db,"goals",gid,"entries",eid));
+  setState({confirm:null});
+}
+
+async function delGoal(gid) {
+  const snap = await getDocs(collection(db,"goals",gid,"entries"));
+  for (const d of snap.docs) await deleteDoc(d.ref);
+  await deleteDoc(doc(db,"goals",gid));
+  setState({confirm:null, adminMode:"list"});
+}
+
+async function saveGoal() {
+  const p = {
+    name: state.form.name, emoji: state.form.emoji,
+    target: parseFloat(state.form.target)||0,
+    monthlyTarget: parseFloat(state.form.monthlyTarget)||0,
+    startMonth: parseInt(state.form.startMonth)||0,
+    endMonth: parseInt(state.form.endMonth)||0,
+  };
+  if (!p.name || !p.target) return;
+  if (state.editGoal) await updateDoc(doc(db,"goals",state.editGoal.id), p);
+  else await addDoc(collection(db,"goals"), {...p, createdAt:Date.now()});
+  setState({adminMode:"list", editGoal:null, form:{name:"",emoji:"🎯",target:"",monthlyTarget:"",startMonth:"",endMonth:""}});
+}
+
+// ── Listeners ────────────────────────────────────────────────────
+let entryUnsubs = [];
+onSnapshot(collection(db,"goals"), snap => {
+  const goals = snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(a.startMonth||0)-(b.startMonth||0));
+  const activeId = state.activeId || (goals[0]?.id || null);
+  setState({goals, activeId, loading:false});
+
+  entryUnsubs.forEach(u=>u());
+  entryUnsubs = goals.map(g =>
+    onSnapshot(collection(db,"goals",g.id,"entries"), snap2 => {
+      const list = snap2.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>b.date-a.date);
+      const entries = {...state.entries, [g.id]: list};
+      const all = Object.values(entries).flat().map(e=>e.date).filter(Boolean);
+      setState({entries, lastTs: all.length ? Math.max(...all) : null});
+    })
+  );
+});
+
+// ── Render helpers ────────────────────────────────────────────────
+function h(tag, attrs={}, ...children) {
+  const el = document.createElement(tag);
+  for (const [k,v] of Object.entries(attrs)) {
+    if (k === "class") el.className = v;
+    else if (k.startsWith("on")) el.addEventListener(k.slice(2).toLowerCase(), v);
+    else if (k === "style" && typeof v === "object") Object.assign(el.style, v);
+    else el.setAttribute(k, v);
+  }
+  for (const c of children.flat()) {
+    if (c == null || c === false) continue;
+    el.appendChild(typeof c === "string" ? document.createTextNode(c) : c);
+  }
+  return el;
+}
+
+function input(cls, type, placeholder, value, onInput, onKeyDown) {
+  const el = h("input", {class:`inp ${cls||""}`, type, placeholder, value});
+  el.addEventListener("input", e => onInput(e.target.value));
+  if (onKeyDown) el.addEventListener("keydown", onKeyDown);
+  return el;
+}
+
+// ── Views ─────────────────────────────────────────────────────────
+function renderDashboard() {
+  const {goals, entries, activeId, flash} = state;
+  const cGoal = goals.find(g=>g.id===activeId) || goals[0];
+  if (!cGoal) return h("div",{},"Sin objetivos");
+  const ci = goals.findIndex(g=>g.id===activeId);
+  const c = clr(ci);
+  const cEnts = entries[cGoal.id] || [];
+  const cTotal = cEnts.reduce((s,e)=>s+(e.amount||0),0);
+  const pct = Math.min(100,(cTotal/cGoal.target)*100);
+  const days = daysSince(state.lastTs);
+  const showAlert = days===null||days>=28;
+
+  return h("div", {},
+    showAlert && h("div", {class:"alrt"},
+      h("span", {style:{fontSize:"17px"}}, "⚠️"),
+      h("span", {}, days===null?"Aún no has registrado ningún aporte. ¡Empieza hoy!":`Llevas ${days} días sin registrar. ¡No pierdas el ritmo!`)
+    ),
+
+    // tabs
+    h("div", {class:"tabs"},
+      ...goals.map((g,i) => {
+        const t=(entries[g.id]||[]).reduce((s,e)=>s+e.amount,0);
+        const tab = h("button", {class:`tab${activeId===g.id?" on":""}`}, `${g.emoji} ${g.name}${t>=g.target?" ✓":""}`);
+        if (activeId===g.id) tab.style.background = clr(i);
+        tab.addEventListener("click", () => setState({activeId:g.id}));
+        return tab;
+      })
+    ),
+
+    // goal card
+    h("div", {class:"card"},
+      h("div", {style:{display:"flex",alignItems:"center",gap:"7px",marginBottom:"3px"}},
+        h("span", {style:{fontSize:"21px"}}, cGoal.emoji),
+        h("span", {style:{fontFamily:"'Syne',sans-serif",fontSize:"17px",fontWeight:"800"}}, cGoal.name),
+        cTotal>=cGoal.target ? h("span", {class:"bdg"}, "META ✓") : null
+      ),
+      h("div", {style:{display:"flex",justifyContent:"space-between",alignItems:"baseline",marginTop:"13px"}},
+        h("div",{}, h("div",{class:"meta"},"ACUMULADO"), h("div",{class:"big",style:{color:c}}, fmt(cTotal))),
+        h("div",{style:{textAlign:"right"}}, h("div",{class:"meta"},"META"), h("div",{style:{fontFamily:"'DM Mono',monospace",fontSize:"14px",color:"#444"}}, fmt(cGoal.target)))
+      ),
+      h("div",{class:"pt"}, h("div",{class:"pf",style:{width:`${pct}%`,background:c}})),
+      h("div",{style:{display:"flex",justifyContent:"space-between"}},
+        h("span",{class:"meta"},`${pct.toFixed(1)}% completado`),
+        h("span",{class:"meta"},`Faltan ${fmt(Math.max(0,cGoal.target-cTotal))}`)
+      ),
+      h("div",{style:{marginTop:"9px",padding:"8px 10px",background:"#111",borderRadius:"8px",fontSize:"11px",color:"#444"}},
+        `Aporte sugerido/mes: `,
+        h("span",{style:{color:c,fontWeight:"700"}}, fmt(cGoal.monthlyTarget)),
+        cGoal.startMonth ? ` · Meses ${cGoal.startMonth}–${cGoal.endMonth}` : ""
+      )
+    ),
+
+    flash ? h("div",{class:"ok"},"✓ Aporte registrado correctamente") : null,
+
+    // add entry
+    h("div",{class:"card"},
+      h("div",{class:"sec"},"Registrar aporte"),
+      h("div",{style:{display:"flex",flexDirection:"column",gap:"8px"}},
+        input("","number","$ Monto en pesos", state.amount, v=>setState({amount:v}), e=>e.key==="Enter"&&addEntry()),
+        input("sm","text","Nota opcional (ej: quincena abril)", state.note, v=>setState({note:v})),
+        h("button",{class:"btn o", onClick:addEntry},"+ AGREGAR APORTE")
+      )
+    ),
+
+    // last entries
+    cEnts.length>0 ? h("div",{class:"card"},
+      h("div",{class:"sec"},"Últimos aportes"),
+      ...cEnts.slice(0,3).map(e =>
+        h("div",{class:"row"},
+          h("div",{},
+            h("div",{class:"ed"}, new Date(e.date).toLocaleDateString("es-CO",{day:"numeric",month:"long",year:"numeric"})),
+            e.note ? h("div",{class:"en"}, e.note) : null
+          ),
+          h("div",{style:{display:"flex",alignItems:"center",gap:"6px"}},
+            h("div",{class:"ea",style:{color:c}}, fmt(e.amount)),
+            h("button",{class:"db", onClick:()=>setState({confirm:{type:"entry",goalId:activeId,entry:e}})}, "🗑")
+          )
+        )
+      ),
+      cEnts.length>3 ? h("div",{style:{textAlign:"center",marginTop:"7px",fontSize:"11px",color:"#3a3a3a",cursor:"pointer"}, onClick:()=>setState({view:"history"})}, `Ver todos (${cEnts.length}) →`) : null
+    ) : null
+  );
+}
+
+function renderResumen() {
+  const {goals,entries} = state;
+  const grandTotal = goals.reduce((s,g)=>s+(entries[g.id]||[]).reduce((a,e)=>a+e.amount,0),0);
+  const grandTarget = goals.reduce((s,g)=>s+g.target,0);
+  return h("div",{},
+    h("div",{style:{fontFamily:"'Syne',sans-serif",fontSize:"19px",fontWeight:"800",marginBottom:"16px"}},"Resumen general"),
+    h("div",{class:"g2"},
+      ...goals.map((g,i)=>{
+        const t=(entries[g.id]||[]).reduce((s,e)=>s+e.amount,0);
+        const p=Math.min(100,(t/g.target)*100);
+        const c=clr(i);
+        const card = h("div",{class:"sc"},
+          h("div",{style:{fontSize:"17px",marginBottom:"4px"}},g.emoji),
+          h("div",{style:{fontSize:"10px",color:"#444",marginBottom:"2px"}},g.name),
+          h("div",{style:{fontFamily:"'Syne',sans-serif",fontSize:"13px",fontWeight:"800",color:c}},fmt(t)),
+          h("div",{class:"sb"},h("div",{class:"sbf",style:{width:`${p}%`,background:c}})),
+          h("div",{class:"sp"},`${p.toFixed(0)}% de ${fmt(g.target)}`)
+        );
+        card.addEventListener("click",()=>setState({activeId:g.id,view:"dashboard"}));
+        return card;
+      })
+    ),
+    h("div",{class:"card",style:{marginTop:"13px"}},
+      h("div",{class:"sec"},"Total ahorrado"),
+      h("div",{class:"big",style:{color:"#FF6B00"}},fmt(grandTotal)),
+      h("div",{class:"meta",style:{marginTop:"3px"}},`de ${fmt(grandTarget)} en total`)
+    )
+  );
+}
+
+function renderHistory() {
+  const {goals,entries} = state;
+  const hasAny = goals.some(g=>(entries[g.id]||[]).length>0);
+  return h("div",{},
+    h("div",{style:{fontFamily:"'Syne',sans-serif",fontSize:"19px",fontWeight:"800",marginBottom:"16px"}},"Historial completo"),
+    ...goals.map((g,i)=>{
+      const ents=entries[g.id]||[];
+      if(!ents.length) return null;
+      const c=clr(i);
+      return h("div",{class:"card",style:{marginBottom:"11px"}},
+        h("div",{style:{display:"flex",alignItems:"center",gap:"6px",marginBottom:"9px"}},
+          h("span",{},g.emoji),
+          h("span",{style:{fontFamily:"'Syne',sans-serif",fontSize:"13px",fontWeight:"800",color:c}},g.name),
+          h("span",{style:{fontSize:"10px",color:"#3a3a3a",marginLeft:"auto"}},`${ents.length} aportes`)
+        ),
+        ...ents.map(e=>
+          h("div",{class:"row"},
+            h("div",{},
+              h("div",{class:"ed"},new Date(e.date).toLocaleDateString("es-CO",{day:"numeric",month:"long",year:"numeric"})),
+              e.note?h("div",{class:"en"},e.note):null
+            ),
+            h("div",{style:{display:"flex",alignItems:"center",gap:"6px"}},
+              h("div",{class:"ea",style:{color:c}},fmt(e.amount)),
+              h("button",{class:"db",onClick:()=>setState({confirm:{type:"entry",goalId:g.id,entry:e}})}, "🗑")
+            )
+          )
+        )
+      );
+    }).filter(Boolean),
+    !hasAny ? h("div",{style:{textAlign:"center",padding:"40px 0",color:"#2e2e2e",fontSize:"12px"}},"Aún no hay aportes registrados.") : null
+  );
+}
+
+function renderAdmin() {
+  const {goals,entries,adminMode,form,emojiOpen,editGoal} = state;
+
+  if (adminMode==="list") return h("div",{},
+    h("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"16px"}},
+      h("div",{style:{fontFamily:"'Syne',sans-serif",fontSize:"19px",fontWeight:"800"}},"Objetivos"),
+      h("button",{class:"btn o",style:{width:"auto",padding:"8px 13px",fontSize:"11px"},
+        onClick:()=>setState({adminMode:"addGoal",editGoal:null,form:{name:"",emoji:"🎯",target:"",monthlyTarget:"",startMonth:"",endMonth:""}})
+      },"+ NUEVO")
+    ),
+    h("div",{class:"card"},
+      ...goals.map((g,i)=>{
+        const t=(entries[g.id]||[]).reduce((s,e)=>s+e.amount,0);
+        const c=clr(i);
+        return h("div",{class:"ai"},
+          h("div",{},
+            h("div",{class:"an"},`${g.emoji} ${g.name}`),
+            h("div",{class:"am"},"Meta: ",fmt(g.target)," · Ahorrado: ",h("span",{style:{color:c}},fmt(t)))
+          ),
+          h("div",{class:"aa"},
+            h("button",{class:"ib",onClick:()=>{
+              setState({adminMode:"editGoal",editGoal:g,form:{name:g.name,emoji:g.emoji,target:String(g.target),monthlyTarget:String(g.monthlyTarget),startMonth:String(g.startMonth),endMonth:String(g.endMonth)}});
+            }},"✏️"),
+            h("button",{class:"ib d",onClick:()=>setState({confirm:{type:"goal",goalId:g.id,goalName:g.name}})},"🗑")
+          )
+        );
+      })
+    )
+  );
+
+  // add / edit form
+  const isEdit = adminMode==="editGoal";
+  const emojiBtn = h("button",{class:"inp",style:{fontSize:"20px",textAlign:"left",cursor:"pointer"}},
+    form.emoji, h("span",{style:{fontSize:"11px",color:"#444",marginLeft:"7px"}},"Toca para cambiar")
+  );
+  emojiBtn.addEventListener("click",()=>setState({emojiOpen:!emojiOpen}));
+
+  return h("div",{},
+    h("div",{style:{display:"flex",alignItems:"center",gap:"9px",marginBottom:"16px"}},
+      h("button",{style:{background:"none",border:"none",color:"#FF6B00",cursor:"pointer",fontSize:"17px"},onClick:()=>setState({adminMode:"list"})},"←"),
+      h("div",{style:{fontFamily:"'Syne',sans-serif",fontSize:"17px",fontWeight:"800"}}, isEdit?"Editar objetivo":"Nuevo objetivo")
+    ),
+    h("div",{class:"card"},
+      h("span",{class:"lbl"},"Emoji"),
+      emojiBtn,
+      emojiOpen ? h("div",{class:"eg"},
+        ...EMOJIS.map(em=>{
+          const d=h("div",{class:`eo${form.emoji===em?" s":""}`},em);
+          d.addEventListener("click",()=>setState({form:{...form,emoji:em},emojiOpen:false}));
+          return d;
+        })
+      ) : null,
+      h("span",{class:"lbl"},"Nombre"),
+      input("sm","text","Ej: Televisor, Viaje, Laptop...",form.name,v=>setState({form:{...form,name:v}})),
+      h("span",{class:"lbl"},"Monto total a ahorrar ($)"),
+      input("sm","number","Ej: 2500000",form.target,v=>setState({form:{...form,target:v}})),
+      h("span",{class:"lbl"},"Aporte mensual sugerido ($)"),
+      input("sm","number","Ej: 250000",form.monthlyTarget,v=>setState({form:{...form,monthlyTarget:v}})),
+      h("div",{style:{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"9px"}},
+        h("div",{}, h("span",{class:"lbl"},"Mes de inicio"), input("sm","number","Ej: 1",form.startMonth,v=>setState({form:{...form,startMonth:v}}))),
+        h("div",{}, h("span",{class:"lbl"},"Mes de fin"),    input("sm","number","Ej: 10",form.endMonth,v=>setState({form:{...form,endMonth:v}})))
+      ),
+      h("div",{style:{display:"flex",gap:"8px",marginTop:"16px"}},
+        h("button",{class:"btn gh",style:{flex:"1"},onClick:()=>setState({adminMode:"list"})},"Cancelar"),
+        h("button",{class:"btn o",style:{flex:"2"},onClick:saveGoal}, isEdit?"GUARDAR CAMBIOS":"CREAR OBJETIVO")
+      )
+    )
+  );
+}
+
+function renderConfirm() {
+  const {confirm} = state;
+  if (!confirm) return null;
+  const isGoal = confirm.type==="goal";
+  return h("div",{class:"mbg",onClick:()=>setState({confirm:null})},
+    h("div",{class:"mb",onClick:e=>e.stopPropagation()},
+      h("div",{class:"mt"}, isGoal?"¿Eliminar objetivo?":"¿Eliminar aporte?"),
+      h("div",{class:"mx"}, isGoal
+        ? `Se eliminará "${confirm.goalName}" y todos sus aportes. Esta acción no se puede deshacer.`
+        : `Se eliminará el aporte de ${fmt(confirm.entry?.amount)}. Esta acción no se puede deshacer.`
+      ),
+      h("div",{class:"r2"},
+        h("button",{class:"btn gh",style:{flex:"1"},onClick:()=>setState({confirm:null})},"Cancelar"),
+        h("button",{class:"btn rd",style:{flex:"1"},onClick:()=> isGoal?delGoal(confirm.goalId):delEntry(confirm.goalId,confirm.entry.id)},"Eliminar")
+      )
+    )
+  );
+}
+
+// ── Main render ───────────────────────────────────────────────────
+function render() {
+  const {loading,view,goals} = state;
+  const root = document.getElementById("root");
+  root.innerHTML = "";
+
+  if (loading) { root.appendChild(h("div",{class:"loading"},"CARGANDO...")); return; }
+
+  const NAV = [
+    {k:"dashboard",i:"💰",l:"Aportar"},
+    {k:"resumen",  i:"📊",l:"Resumen"},
+    {k:"history",  i:"📋",l:"Historial"},
+    {k:"admin",    i:"⚙️", l:"Objetivos"},
+  ];
+
+  const nav = h("nav",{class:"nav"},
+    ...NAV.map(n=>{
+      const b=h("button",{class:`nb${view===n.k?" on":""}`},
+        h("span",{style:{fontSize:"17px"}},n.i), n.l
+      );
+      b.addEventListener("click",()=>setState({view:n.k}));
+      return b;
+    })
+  );
+
+  let content;
+  if      (view==="dashboard") content = renderDashboard();
+  else if (view==="resumen")   content = renderResumen();
+  else if (view==="history")   content = renderHistory();
+  else if (view==="admin")     content = renderAdmin();
+
+  const wrap = h("div",{style:{fontFamily:"'DM Mono',monospace",minHeight:"100vh",background:"#0D0D0D",color:"#f0ece4"}},
+    h("div",{class:"w"},
+      h("div",{class:"T"},"Plan de", h("br",{}), h("span",{},"Ahorro")),
+      h("div",{class:"sub"},"Control financiero personal"),
+      content
+    ),
+    nav,
+    renderConfirm()
+  );
+
+  root.appendChild(wrap);
+}
+
+// ── Boot ──────────────────────────────────────────────────────────
+seedIfEmpty().then(render);
+</script>
+</body>
+</html>
