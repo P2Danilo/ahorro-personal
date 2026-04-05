@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="es">
 <head>
   <meta charset="UTF-8"/>
@@ -262,9 +263,30 @@ function renderDashboard() {
     h("div",{class:"card"},
       h("div",{class:"sec"},"Registrar aporte"),
       h("div",{style:{display:"flex",flexDirection:"column",gap:"8px"}},
-        input("","number","$ Monto en pesos", state.amount, v=>setState({amount:v}), e=>e.key==="Enter"&&addEntry()),
-        input("sm","text","Nota opcional (ej: quincena abril)", state.note, v=>setState({note:v})),
-        h("button",{class:"btn o", onClick:addEntry},"+ AGREGAR APORTE")
+        (() => {
+          const el = document.createElement("input");
+          el.className = "inp"; el.type = "number"; el.placeholder = "$ Monto en pesos";
+          el.id = "inp-amount";
+          el.addEventListener("input", e => { state.amount = e.target.value; });
+          el.addEventListener("keydown", e => { if(e.key==="Enter") addEntry(); });
+          return el;
+        })(),
+        (() => {
+          const el = document.createElement("input");
+          el.className = "inp sm"; el.type = "text"; el.placeholder = "Nota opcional (ej: quincena abril)";
+          el.id = "inp-note";
+          el.addEventListener("input", e => { state.note = e.target.value; });
+          return el;
+        })(),
+        h("button",{class:"btn o", onClick: async ()=>{
+          const amtEl = document.getElementById("inp-amount");
+          const noteEl = document.getElementById("inp-note");
+          if(amtEl) state.amount = amtEl.value;
+          if(noteEl) state.note = noteEl.value;
+          await addEntry();
+          if(amtEl) amtEl.value = "";
+          if(noteEl) noteEl.value = "";
+        }},"+ AGREGAR APORTE")
       )
     ),
 
@@ -381,19 +403,45 @@ function renderAdmin() {
     )
   );
 
-  // add / edit form
+  // add / edit form — inputs are UNCONTROLLED to avoid losing focus on re-render
   const isEdit = adminMode==="editGoal";
+
+  function mkInput(cls, type, placeholder, initVal, fieldId) {
+    const el = document.createElement("input");
+    el.className = `inp ${cls}`;
+    el.type = type;
+    el.placeholder = placeholder;
+    el.value = initVal || "";
+    el.dataset.field = fieldId;
+    // update state.form on blur only (not on every keystroke)
+    el.addEventListener("blur", e => {
+      state.form = {...state.form, [fieldId]: e.target.value};
+    });
+    return el;
+  }
+
   const emojiBtn = h("button",{class:"inp",style:{fontSize:"20px",textAlign:"left",cursor:"pointer"}},
     form.emoji, h("span",{style:{fontSize:"11px",color:"#444",marginLeft:"7px"}},"Toca para cambiar")
   );
   emojiBtn.addEventListener("click",()=>setState({emojiOpen:!emojiOpen}));
+
+  async function handleSave() {
+    // read values directly from DOM inputs before saving
+    const card = document.getElementById("admin-form-card");
+    if (card) {
+      card.querySelectorAll("input[data-field]").forEach(el => {
+        state.form = {...state.form, [el.dataset.field]: el.value};
+      });
+    }
+    await saveGoal();
+  }
 
   return h("div",{},
     h("div",{style:{display:"flex",alignItems:"center",gap:"9px",marginBottom:"16px"}},
       h("button",{style:{background:"none",border:"none",color:"#FF6B00",cursor:"pointer",fontSize:"17px"},onClick:()=>setState({adminMode:"list"})},"←"),
       h("div",{style:{fontFamily:"'Syne',sans-serif",fontSize:"17px",fontWeight:"800"}}, isEdit?"Editar objetivo":"Nuevo objetivo")
     ),
-    h("div",{class:"card"},
+    h("div",{class:"card", id:"admin-form-card"},
       h("span",{class:"lbl"},"Emoji"),
       emojiBtn,
       emojiOpen ? h("div",{class:"eg"},
@@ -404,18 +452,18 @@ function renderAdmin() {
         })
       ) : null,
       h("span",{class:"lbl"},"Nombre"),
-      input("sm","text","Ej: Televisor, Viaje, Laptop...",form.name,v=>setState({form:{...form,name:v}})),
+      mkInput("sm","text","Ej: Televisor, Viaje, Laptop...", form.name, "name"),
       h("span",{class:"lbl"},"Monto total a ahorrar ($)"),
-      input("sm","number","Ej: 2500000",form.target,v=>setState({form:{...form,target:v}})),
+      mkInput("sm","number","Ej: 2500000", form.target, "target"),
       h("span",{class:"lbl"},"Aporte mensual sugerido ($)"),
-      input("sm","number","Ej: 250000",form.monthlyTarget,v=>setState({form:{...form,monthlyTarget:v}})),
+      mkInput("sm","number","Ej: 250000", form.monthlyTarget, "monthlyTarget"),
       h("div",{style:{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"9px"}},
-        h("div",{}, h("span",{class:"lbl"},"Mes de inicio"), input("sm","number","Ej: 1",form.startMonth,v=>setState({form:{...form,startMonth:v}}))),
-        h("div",{}, h("span",{class:"lbl"},"Mes de fin"),    input("sm","number","Ej: 10",form.endMonth,v=>setState({form:{...form,endMonth:v}})))
+        h("div",{}, h("span",{class:"lbl"},"Mes de inicio"), mkInput("sm","number","Ej: 1", form.startMonth, "startMonth")),
+        h("div",{}, h("span",{class:"lbl"},"Mes de fin"),    mkInput("sm","number","Ej: 10", form.endMonth, "endMonth"))
       ),
       h("div",{style:{display:"flex",gap:"8px",marginTop:"16px"}},
         h("button",{class:"btn gh",style:{flex:"1"},onClick:()=>setState({adminMode:"list"})},"Cancelar"),
-        h("button",{class:"btn o",style:{flex:"2"},onClick:saveGoal}, isEdit?"GUARDAR CAMBIOS":"CREAR OBJETIVO")
+        h("button",{class:"btn o",style:{flex:"2"},onClick:handleSave}, isEdit?"GUARDAR CAMBIOS":"CREAR OBJETIVO")
       )
     )
   );
@@ -487,5 +535,6 @@ function render() {
 // ── Boot ──────────────────────────────────────────────────────────
 seedIfEmpty().then(render);
 </script>
+
 </body>
 </html>
