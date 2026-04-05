@@ -153,11 +153,12 @@ async function saveGoal() {
   const p = {
     name: state.form.name, emoji: state.form.emoji,
     target: parseFloat(state.form.target)||0,
-    monthlyTarget: parseFloat(state.form.monthlyTarget)||0,
     startMonth: parseInt(state.form.startMonth)||0,
     endMonth: parseInt(state.form.endMonth)||0,
   };
   if (!p.name || !p.target) return;
+  const months = (p.startMonth>0 && p.endMonth>=p.startMonth) ? (p.endMonth-p.startMonth+1) : 1;
+  p.monthlyTarget = Math.ceil(p.target / months);
   if (state.editGoal) await updateDoc(doc(db,"goals",state.editGoal.id), p);
   else await addDoc(collection(db,"goals"), {...p, createdAt:Date.now()});
   setState({adminMode:"list", editGoal:null, form:{name:"",emoji:"🎯",target:"",monthlyTarget:"",startMonth:"",endMonth:""}});
@@ -380,7 +381,7 @@ function renderAdmin() {
     h("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"16px"}},
       h("div",{style:{fontFamily:"'Syne',sans-serif",fontSize:"19px",fontWeight:"800"}},"Objetivos"),
       h("button",{class:"btn o",style:{width:"auto",padding:"8px 13px",fontSize:"11px"},
-        onClick:()=>setState({adminMode:"addGoal",editGoal:null,form:{name:"",emoji:"🎯",target:"",monthlyTarget:"",startMonth:"",endMonth:""}})
+        onClick:()=>setState({adminMode:"addGoal",editGoal:null,form:{name:"",emoji:"🎯",target:"",startMonth:"",endMonth:""}})
       },"+ NUEVO")
     ),
     h("div",{class:"card"},
@@ -394,7 +395,7 @@ function renderAdmin() {
           ),
           h("div",{class:"aa"},
             h("button",{class:"ib",onClick:()=>{
-              setState({adminMode:"editGoal",editGoal:g,form:{name:g.name,emoji:g.emoji,target:String(g.target),monthlyTarget:String(g.monthlyTarget),startMonth:String(g.startMonth),endMonth:String(g.endMonth)}});
+              setState({adminMode:"editGoal",editGoal:g,form:{name:g.name,emoji:g.emoji,target:String(g.target),startMonth:String(g.startMonth),endMonth:String(g.endMonth)}});
             }},"✏️"),
             h("button",{class:"ib d",onClick:()=>setState({confirm:{type:"goal",goalId:g.id,goalName:g.name}})},"🗑")
           )
@@ -455,12 +456,24 @@ function renderAdmin() {
       mkInput("sm","text","Ej: Televisor, Viaje, Laptop...", form.name, "name"),
       h("span",{class:"lbl"},"Monto total a ahorrar ($)"),
       mkInput("sm","number","Ej: 2500000", form.target, "target"),
-      h("span",{class:"lbl"},"Aporte mensual sugerido ($)"),
-      mkInput("sm","number","Ej: 250000", form.monthlyTarget, "monthlyTarget"),
       h("div",{style:{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"9px"}},
         h("div",{}, h("span",{class:"lbl"},"Mes de inicio"), mkInput("sm","number","Ej: 1", form.startMonth, "startMonth")),
         h("div",{}, h("span",{class:"lbl"},"Mes de fin"),    mkInput("sm","number","Ej: 10", form.endMonth, "endMonth"))
       ),
+      (() => {
+        const t = parseFloat(form.target)||0;
+        const s = parseInt(form.startMonth)||0;
+        const e2 = parseInt(form.endMonth)||0;
+        const months = (s>0 && e2>=s) ? (e2-s+1) : 0;
+        const suggested = (t>0 && months>0) ? Math.ceil(t/months) : 0;
+        const box = h("div",{style:{marginTop:"12px",padding:"10px 12px",background:"#111",borderRadius:"8px",fontSize:"11px",color:"#444",minHeight:"36px"}});
+        if (suggested>0) {
+          box.innerHTML = `Aporte mensual calculado: <span style="color:#FF6B00;font-weight:700">${fmt(suggested)}</span> <span style="color:#333">· ${months} mes${months>1?"es":""}</span>`;
+        } else {
+          box.innerHTML = `<span style="color:#2a2a2a">Ingresa monto y meses para ver el cálculo</span>`;
+        }
+        return box;
+      })(),
       h("div",{style:{display:"flex",gap:"8px",marginTop:"16px"}},
         h("button",{class:"btn gh",style:{flex:"1"},onClick:()=>setState({adminMode:"list"})},"Cancelar"),
         h("button",{class:"btn o",style:{flex:"2"},onClick:handleSave}, isEdit?"GUARDAR CAMBIOS":"CREAR OBJETIVO")
